@@ -1,4 +1,3 @@
-
 // js/main.js
 
 import { showScreen } from './ui/screens.js';
@@ -6,16 +5,43 @@ import { showToast } from './ui/toast.js';
 import { initRenderer, render, updateInventoryUI } from './game/renderer.js';
 import { initInput } from './game/input.js';
 import { selectInventoryPiece, turn } from './game/state.js';
-import { createRoom, joinRoom } from './online/rooms.js';
+import { createRoom, joinRoom, currentRoom } from './online/rooms.js';
+import { subscribeToActions } from './online/actions.js';
 
 window.showScreen = showScreen;
 window.showToast = showToast;
+
+// 🔧 TEMP DEV HELPERS (Phase 6.4 testing)
+
+window.__createRoom = async () => {
+    const room = await createRoom();
+    console.log('ROOM CREATED:', room);
+    alert(`ROOM CODE: ${room.code}`);
+
+    subscribeToActions(room.id);
+
+    showScreen('game-screen');
+    render();
+    updateTurnUI();
+};
+
+window.__joinRoom = async (code) => {
+    const room = await joinRoom(code);
+    console.log('ROOM JOINED:', room);
+
+    subscribeToActions(room.id);
+
+    showScreen('game-screen');
+    render();
+    updateTurnUI();
+};
 
 window.createOnlineRoom = async () => {
     try {
         const room = await createRoom();
         console.log('Room created:', room);
         alert(`Room code: ${room.code}`);
+        subscribeToActions(currentRoom.id);
     } catch (e) {
         alert(e.message);
     }
@@ -26,6 +52,7 @@ window.joinOnlineRoom = async (code) => {
         const room = await joinRoom(code);
         console.log('Joined room:', room);
         alert(`Joined room ${room.code}`);
+        subscribeToActions(currentRoom.id);
     } catch (e) {
         alert('Room not found');
     }
@@ -59,12 +86,6 @@ function updateTurnUI() {
 }
 window.updateTurnUI = updateTurnUI;
 
-document.querySelectorAll('.inv-item').forEach(item => {
-    item.addEventListener('click', () => {
-        const piece = item.dataset.type;
-        selectInventoryPiece(piece);
-    });
-});
 
 window.startLocalGame = () => {
     showScreen('game-screen');

@@ -14,6 +14,8 @@ import { getValidMoves, checkPlacementComplete, checkWin } from './rules.js';
 import { render, setValidMoves } from './renderer.js';
 import { showToast } from '../ui/toast.js';
 import { applyAction } from './actions.js';
+import { sendAction } from '../online/actions.js';
+import { currentRoom, myColor } from '../online/rooms.js';
 
 let selectedPiece = null;
 let selectedFrom = null;
@@ -38,14 +40,18 @@ function handleClick(e) {
 
     if (r < 0 || r > 3 || c < 0 || c > 3) return;
 
-    // Placement phase
+    // Placement commit (turn-restricted)
     if (selectedInventoryPiece) {
+        if (currentRoom && turn !== myColor) {
+            showToast("Not your turn to place");
+            return;
+        }
         placePiece(r, c);
         return;
     }
 
-    // Selecting a piece
-    if (!selectedFrom && board[r][c]?.color === turn) {
+    // Selecting a piece (ALWAYS allowed)
+    if (!selectedFrom && board[r][c]?.color === myColor) {
         selectedFrom = { r, c };
         selectedPiece = board[r][c];
         setValidMoves(getValidMoves(r, c));
@@ -53,14 +59,21 @@ function handleClick(e) {
         return;
     }
 
-    // Moving a piece
+    // Move commit (turn-restricted)
     if (selectedFrom) {
+        if (currentRoom && turn !== myColor) {
+            showToast("Not your turn to move");
+            return;
+        }
         movePiece(r, c);
     }
 }
 
+
 function placePiece(r, c) {
-    if (!inventories[turn].includes(selectedInventoryPiece)) {
+    console.log("placePiece called", { r, c, selectedInventoryPiece, turn, myColor, currentRoom });
+
+    if (!currentRoom && !inventories[turn].includes(selectedInventoryPiece)) {
         showToast("You don't have that piece");
         clearSelectedInventory();
         return;
@@ -80,13 +93,13 @@ function placePiece(r, c) {
 
     clearSelectedInventory();
     setValidMoves([]);
-    const result = applyAction(action);
-
-    render();
-    window.updateTurnUI();
-    
-    if (result?.gameOver) {
-        showToast(`${result.winner.toUpperCase()} WINS!`);
+    if (currentRoom) {
+        const result = applyAction(action);   // 👈 APPLY LOCALLY
+        postApply(result);
+        sendAction(currentRoom.id, action);
+    } else {
+        const result = applyAction(action);
+        postApply(result);
     }
 }
 
@@ -114,11 +127,20 @@ function movePiece(r, c) {
     selectedPiece = null;
     setValidMoves([]);
 
-    const result = applyAction(action);
+    if (currentRoom) {
+        const result = applyAction(action);   // 👈 APPLY LOCALLY
+        postApply(result);
+        sendAction(currentRoom.id, action);
+    } else {
+        const result = applyAction(action);
+        postApply(result);
+    }
+}
 
+function postApply(result) {
     render();
     window.updateTurnUI();
-    
+
     if (result?.gameOver) {
         showToast(`${result.winner.toUpperCase()} WINS!`);
     }
