@@ -73,7 +73,7 @@
             <div class="room-code-display" id="room-code">----</div>
             <button onclick="copyRoomCode()">📋 Copy Code</button>
             <p class="waiting-text"><span class="spinner"></span>Waiting for opponent to join...</p>
-            <button onclick="cancelRoom()" style="background:#444; color:white; margin-top: 15px;">Cancel</button>
+            <button onclick="leaveOnlineGame()" style="background:#444; color:white; margin-top: 15px;">Cancel</button>
         </div>
     </div>
 
@@ -140,10 +140,9 @@
 
             <div class="game-over-controls" id="game-over-controls">
                 <button id="ingame-rematch-btn" onclick="handleRematchClick()">🔄 Rematch</button>
-                <button onclick="cancelOnlineRoom()" style="background:#444; color:white;">Quit Game</button>
+                <button onclick="leaveOnlineGame()" style="background:#444; color:white;">Quit Game</button>
             </div>
-            
-            <button id="quit-btn" onclick="cancelOnlineRoom()" style="background:#444; color:white;">Quit Game</button>
+            <button id="quit-btn" onclick="leaveOnlineGame()" style="background:#444; color:white;">Quit Game</button>
         </div>
         <canvas id="boardCanvas"></canvas>
     </div>

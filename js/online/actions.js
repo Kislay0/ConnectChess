@@ -4,10 +4,12 @@ import { applyAction } from '../game/actions.js';
 import { myColor } from './rooms.js';
 import { render } from '../game/renderer.js';
 import { showToast } from '../ui/toast.js';
+import { gameOver } from '../game/state.js';
 
 let channel = null;
 
 function handleRemoteAction(action) {
+    if (gameOver) return;
     const result = applyAction(action);
 
     render();

@@ -52,3 +52,22 @@ export function clearSelectedInventory() {
 export function setGameOver() {
     gameOver = true;
 }
+
+export function resetGameState() {
+    board.length = 0;
+    board.push(
+        [null, null, null, null],
+        [null, null, null, null],
+        [null, null, null, null],
+        [null, null, null, null]
+    );
+
+    inventories.white = ['P', 'R', 'N', 'B'];
+    inventories.black = ['P', 'R', 'N', 'B'];
+
+    placementComplete.white = false;
+    placementComplete.black = false;
+
+    turn = 'white';
+    gameOver = false;
+}

@@ -4,14 +4,14 @@ import { showScreen } from './ui/screens.js';
 import { showToast } from './ui/toast.js';
 import { initRenderer, render, updateInventoryUI } from './game/renderer.js';
 import { initInput } from './game/input.js';
-import { selectInventoryPiece, turn } from './game/state.js';
-import { createRoom, joinRoom, currentRoom, subscribeToRoomStatus, cancelRoom } from './online/rooms.js';
+import { selectInventoryPiece, turn, resetGameState } from './game/state.js';
+import { createRoom, joinRoom, currentRoom, subscribeToRoomStatus, closeRoom, deleteRoomAndActions } from './online/rooms.js';
 import { subscribeToActions } from './online/actions.js';
 
 window.showScreen = showScreen;
 window.showToast = showToast;
 
-// 🔧 TEMP DEV HELPERS (Phase 6.4 testing)
+// TEMP DEV HELPERS
 
 // window.__createRoom = async () => {
 //     const room = await createRoom();
@@ -77,9 +77,14 @@ window.joinOnlineRoom = async () => {
     }
 };
 
-window.cancelOnlineRoom = async () => {
-    await cancelRoom();
+window.leaveOnlineGame = async () => {
+    await closeRoom();        // 🔔 notify opponent (realtime-safe)
+    resetGameState();         // 🧹 clear local JS state
     showScreen('menu-screen');
+
+    setTimeout(() => {
+        deleteRoomAndActions();
+    }, 1000);
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -109,9 +114,20 @@ function updateTurnUI() {
 }
 window.updateTurnUI = updateTurnUI;
 
-
 window.startLocalGame = () => {
     showScreen('game-screen');
     render();
     updateTurnUI();
 };
+
+window.leaveOnlineGame = async () => {
+    await closeRoom();          // notify opponent
+    resetGameState();           // clear local state
+    showScreen('menu-screen');
+};
+
+window.addEventListener('room-closed', () => {
+    showToast("Opponent left the game");
+    resetGameState();
+    showScreen('menu-screen');
+});

@@ -74,18 +74,37 @@ export function subscribeToRoomStatus(roomId, onOpponentJoin) {
                 if (updatedRoom.status === 'active') {
                     onOpponentJoin(updatedRoom);
                 }
+                if (updatedRoom.status === 'closed') {
+                    window.dispatchEvent(new Event('room-closed'));
+                }
             }
         )
         .subscribe();
 }
 
-export async function cancelRoom() {
+
+export async function closeRoom() {
     if (!currentRoom) return;
 
     await supabase
         .from('rooms')
-        .delete()
+        .update({ status: 'closed' })
         .eq('id', currentRoom.id);
+}
 
+export async function deleteRoomAndActions() {
+    if (!currentRoom) return;
+
+    const roomId = currentRoom.id;
     currentRoom = null;
+
+    await supabase
+        .from('actions')
+        .delete()
+        .eq('room_id', roomId);
+
+    await supabase
+        .from('rooms')
+        .delete()
+        .eq('id', roomId);
 }
