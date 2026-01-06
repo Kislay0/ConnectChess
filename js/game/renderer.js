@@ -7,6 +7,11 @@ const PIECES = {
 };
 
 let canvas, ctx, cellSize;
+let validMoves = [];
+
+export function setValidMoves(moves) {
+    validMoves = moves;
+}
 
 export function initRenderer(canvasEl) {
     canvas = canvasEl;
@@ -41,4 +46,27 @@ export function render() {
             }
         }
     }
+    validMoves.forEach(move => {
+        ctx.beginPath();
+        ctx.arc(
+            move.c * cellSize + cellSize / 2,
+            move.r * cellSize + cellSize / 2,
+            cellSize * 0.15,
+            0,
+            Math.PI * 2
+        );
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.fill();
+    });
+}
+export function updateInventoryUI() {
+    document.querySelectorAll('.inv-item').forEach(item => {
+        const piece = item.dataset.type;
+        const player = item.dataset.player;
+
+        item.classList.toggle(
+            'selected',
+            player && piece && piece === window.__selectedInventory
+        );
+    });
 }

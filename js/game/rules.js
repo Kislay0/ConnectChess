@@ -52,6 +52,15 @@ export function getValidMoves(r, c) {
         if (nr >= 0 && nr < 4 && !board[nr][c]) {
             moves.push({ r: nr, c });
         }
+        [-1, 1].forEach(dc => {
+        const nc = c + dc;
+            if (nr >= 0 && nr < 4 && nc >= 0 && nc < 4) {
+                const target = board[nr][nc];
+                if (target && target.color !== piece.color) {
+                    moves.push({ r: nr, c: nc });
+                }
+            }
+        });
     }
 
     return moves;

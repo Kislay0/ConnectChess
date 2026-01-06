@@ -6,10 +6,12 @@ import {
     placementComplete,
     switchTurn,
     selectedInventoryPiece,
-    clearSelectedInventory
+    clearSelectedInventory,
+    gameOver,
+    setGameOver
 } from './state.js';
 import { getValidMoves, checkPlacementComplete, checkWin } from './rules.js';
-import { render } from './renderer.js';
+import { render, setValidMoves } from './renderer.js';
 import { showToast } from '../ui/toast.js';
 
 let selectedPiece = null;
@@ -24,6 +26,11 @@ export function initInput(canvasEl, size) {
 }
 
 function handleClick(e) {
+    if (gameOver) {
+        showToast("Game over");
+        return;
+    }
+
     const rect = canvas.getBoundingClientRect();
     const c = Math.floor((e.clientX - rect.left) / cellSize);
     const r = Math.floor((e.clientY - rect.top) / cellSize);
@@ -40,6 +47,7 @@ function handleClick(e) {
     if (!selectedFrom && board[r][c]?.color === turn) {
         selectedFrom = { r, c };
         selectedPiece = board[r][c];
+        setValidMoves(getValidMoves(r, c));
         render();
         return;
     }
@@ -51,6 +59,17 @@ function handleClick(e) {
 }
 
 function placePiece(r, c) {
+    if (!inventories[turn].includes(selectedInventoryPiece)) {
+        showToast("You don't have that piece");
+        clearSelectedInventory();
+        return;
+    }
+
+    if (inventories[turn].length === 0) {
+        showToast("No pieces left to place");
+        return;
+    }
+
     if (board[r][c]) {
         showToast('Cell already occupied');
         return;
@@ -66,6 +85,7 @@ function placePiece(r, c) {
     inventories[turn].splice(idx, 1);
 
     clearSelectedInventory();
+    setValidMoves([]);
     checkPlacementComplete(turn);
     endTurn();
 }
@@ -77,6 +97,7 @@ function movePiece(r, c) {
     if (!valid) {
         selectedFrom = null;
         selectedPiece = null;
+        setValidMoves([]);
         render();
         return;
     }
@@ -91,15 +112,19 @@ function movePiece(r, c) {
 
     selectedFrom = null;
     selectedPiece = null;
+    setValidMoves([]);
     endTurn();
 }
 
 function endTurn() {
     if (checkWin(turn)) {
+        setGameOver();
+        render();
         showToast(`${turn.toUpperCase()} WINS!`);
         return;
     }
 
     switchTurn();
     render();
+    window.updateTurnUI();
 }

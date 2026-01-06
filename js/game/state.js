@@ -7,6 +7,7 @@ export let board = Array.from({ length: BOARD_SIZE }, () =>
 );
 
 export let turn = 'white';
+export let gameOver = false;
 
 export let inventories = {
     white: ['P', 'R', 'N', 'B'],
@@ -46,4 +47,8 @@ export function selectInventoryPiece(piece) {
 
 export function clearSelectedInventory() {
     selectedInventoryPiece = null;
+}
+
+export function setGameOver() {
+    gameOver = true;
 }
