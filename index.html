@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShadowFull's Tic Tac Chess</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- MAIN MENU -->
+    <div id="menu-screen" class="screen">
+        <div class="menu-card">
+            <div class="brand-name">ShadowFull's</div>
+            <h1>TIC TAC CHESS</h1>
+            <p>Strategy meets Simplicity</p>
+            <div id="auth-status" class="auth-status">Not signed in</div>
+            <div class="menu-btns">
+                <button onclick="showScreen('mode-screen')">Play Now</button>
+                <button onclick="showScreen('how-to-screen')">How to Play</button>
+                <button id="auth-btn" onclick="handleAuth()" class="google-btn">🔐 Sign in with Google</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODE SELECTION -->
+    <div id="mode-screen" class="screen hidden">
+        <div class="menu-card">
+            <div class="brand-name">ShadowFull's</div>
+            <h2>Select Game Mode</h2>
+            <div class="menu-btns">
+                <button onclick="startAIGame()">🤖 Play vs AI</button>
+                <button onclick="startLocalGame()">🎮 Local Multiplayer</button>
+                <button onclick="showScreen('online-screen')">🌐 Online Multiplayer</button>
+                <button onclick="showScreen('menu-screen')" style="background:#444; color:white;">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ONLINE MULTIPLAYER MENU -->
+    <div id="online-screen" class="screen hidden">
+        <div class="menu-card">
+            <div class="brand-name">ShadowFull's</div>
+            <h2>🌐 Online Multiplayer</h2>
+            <div id="online-auth-status" class="auth-status">Sign in to play online</div>
+            <div class="menu-btns">
+                <button onclick="startMatchmaking()" id="matchmaking-btn">🎯 Find Match</button>
+                <button onclick="createRoom()">🏠 Create Private Room</button>
+                <button onclick="showScreen('join-screen')">🔑 Join Private Room</button>
+                <button onclick="showScreen('mode-screen')" style="background:#444; color:white;">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MATCHMAKING SCREEN -->
+    <div id="matchmaking-screen" class="screen hidden">
+        <div class="menu-card">
+            <h2>🎯 Finding Match...</h2>
+            <div class="matchmaking-status">
+                <div class="spinner"></div>
+                <p>Searching for opponent...</p>
+                <p id="queue-count" class="queue-count">Players in queue: 0</p>
+            </div>
+            <button id="cancel-matchmaking-btn" style="background:#e74c3c; color:white; margin-top: 15px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- CREATE ROOM SCREEN -->
+    <div id="host-screen" class="screen hidden">
+        <div class="menu-card">
+            <h2>Room Created!</h2>
+            <p>Share this code with your friend:</p>
+            <div class="room-code-display" id="room-code">----</div>
+            <button onclick="copyRoomCode()">📋 Copy Code</button>
+            <p class="waiting-text"><span class="spinner"></span>Waiting for opponent to join...</p>
+            <button onclick="cancelRoom()" style="background:#444; color:white; margin-top: 15px;">Cancel</button>
+        </div>
+    </div>
+
+    <!-- JOIN ROOM SCREEN -->
+    <div id="join-screen" class="screen hidden">
+        <div class="menu-card">
+            <h2>Join Room</h2>
+            <p>Enter the room code:</p>
+            <input type="text" class="room-input" id="join-code-input" maxlength="6" placeholder="------" autocomplete="off">
+            <div class="menu-btns">
+                <button onclick="joinRoom()" id="join-btn">Join Game</button>
+                <button onclick="showScreen('mode-screen')" style="background:#444; color:white;">Back</button>
+            </div>
+            <p id="join-status" class="waiting-text" style="display:none;"><span class="spinner"></span>Connecting...</p>
+        </div>
+    </div>
+
+    <!-- HOW TO PLAY -->
+    <div id="how-to-screen" class="screen hidden">
+        <div class="how-to-card menu-card">
+            <h2>Rules</h2>
+            <p>1. Each player has 4 pieces: Pawn, Rook, Knight, Bishop.</p>
+            <p>2. <strong>Place 3 pieces</strong> before you can move them.</p>
+            <p>3. Align 4 in a row to win.</p>
+            <p>4. Move like chess. Capture returns pieces to hand.</p>
+            <p>5. If captured below 3, place a piece first.</p>
+            <p>6. Pawns reverse at edges.</p>
+            <button onclick="showScreen('menu-screen')">Got it!</button>
+        </div>
+    </div>
+
+    <!-- GAMEPLAY SCREEN -->
+    <div id="game-screen" class="screen hidden">
+        <div class="game-info">
+            <div class="status-box">
+                <div id="player-identity" style="font-size:0.8rem; color:var(--accent)">LOCAL MODE</div>
+                <div id="turn-txt" class="turn-display white-turn">WHITE'S TURN</div>
+                <div id="turn-indicator" class="turn-indicator my-turn-indicator" style="display:none;">Your turn!</div>
+                <div id="phase-indicator" class="phase-indicator phase-place">📍 Place pieces (need 3 on board)</div>
+            </div>
+
+            <div id="white-inv" class="inventory">
+                <div class="inv-item" data-type="P" data-player="white">♙</div>
+                <div class="inv-item" data-type="R" data-player="white">♖</div>
+                <div class="inv-item" data-type="N" data-player="white">♘</div>
+                <div class="inv-item" data-type="B" data-player="white">♗</div>
+            </div>
+
+            <div id="black-inv" class="inventory" style="display:none">
+                <div class="inv-item" data-type="P" data-player="black">♟</div>
+                <div class="inv-item" data-type="R" data-player="black">♜</div>
+                <div class="inv-item" data-type="N" data-player="black">♞</div>
+                <div class="inv-item" data-type="B" data-player="black">♝</div>
+            </div>
+
+            <div class="history-controls">
+                <button class="history-btn" id="history-start" onclick="historyGoToStart()" title="Go to start">⏮</button>
+                <button class="history-btn" id="history-back" onclick="historyGoBack()" title="Previous move">◀</button>
+                <button class="history-btn playback-btn" id="playback-btn" onclick="togglePlayback()" title="Auto playback">▶ Play</button>
+                <button class="history-btn" id="history-forward" onclick="historyGoForward()" title="Next move">▶</button>
+                <button class="history-btn" id="history-end" onclick="historyGoToEnd()" title="Go to current">⏭</button>
+            </div>
+            <div class="history-indicator" id="history-indicator">📜 Viewing move history</div>
+
+            <div class="game-over-controls" id="game-over-controls">
+                <button id="ingame-rematch-btn" onclick="handleRematchClick()">🔄 Rematch</button>
+                <button onclick="location.reload()" style="background:#444; color:white;">Quit Game</button>
+            </div>
+            
+            <button id="quit-btn" onclick="location.reload()" style="background:#444; color:white;">Quit Game</button>
+        </div>
+        <canvas id="boardCanvas"></canvas>
+    </div>
+
+    <!-- WIN SCREEN -->
+    <div id="win-screen" class="screen hidden" style="background: rgba(0,0,0,0.85); z-index: 200;">
+        <div class="menu-card">
+            <button class="close-btn" onclick="closeWinScreen()" title="View board">✕</button>
+            <h1 id="winner-text">WHITE WINS!</h1>
+            <p style="font-size: 0.85rem; color: #aaa;">Use arrow keys or ✕ to view move history</p>
+            <div id="rematch-section" style="display:none;">
+                <button id="rematch-btn" onclick="handleRematchClick()">🔄 Rematch</button>
+                <p id="rematch-status" class="waiting-text" style="display:none;"></p>
+            </div>
+            <button onclick="leaveGame()" style="margin-top:10px; background:#444; color:white;">Back to Menu</button>
+        </div>
+    </div>
+
+    <!-- REMATCH REQUEST POPUP -->
+    <div id="rematch-popup" class="screen hidden" style="background: rgba(0,0,0,0.9); z-index: 250;">
+        <div class="menu-card">
+            <h2>🔄 Rematch Request</h2>
+            <p>Your opponent wants a rematch!</p>
+            <div class="menu-btns" style="margin-top: 20px;">
+                <button onclick="acceptRematch()" style="background: #2ecc71; color: white;">✓ Accept</button>
+                <button onclick="rejectRematch()" style="background: #e74c3c; color: white;">✗ Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast">Code Copied!</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
