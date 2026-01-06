@@ -13,6 +13,7 @@ import {
 import { getValidMoves, checkPlacementComplete, checkWin } from './rules.js';
 import { render, setValidMoves } from './renderer.js';
 import { showToast } from '../ui/toast.js';
+import { applyAction } from './actions.js';
 
 let selectedPiece = null;
 let selectedFrom = null;
@@ -65,30 +66,30 @@ function placePiece(r, c) {
         return;
     }
 
-    if (inventories[turn].length === 0) {
-        showToast("No pieces left to place");
-        return;
-    }
-
     if (board[r][c]) {
-        showToast('Cell already occupied');
+        showToast("Cell already occupied");
         return;
     }
 
-    board[r][c] = {
-        type: selectedInventoryPiece,
-        color: turn,
-        dir: turn === 'white' ? -1 : 1
+    const action = {
+        type: 'place',
+        player: turn,
+        piece: selectedInventoryPiece,
+        to: { r, c }
     };
-
-    const idx = inventories[turn].indexOf(selectedInventoryPiece);
-    inventories[turn].splice(idx, 1);
 
     clearSelectedInventory();
     setValidMoves([]);
-    checkPlacementComplete(turn);
-    endTurn();
+    const result = applyAction(action);
+
+    render();
+    window.updateTurnUI();
+    
+    if (result?.gameOver) {
+        showToast(`${result.winner.toUpperCase()} WINS!`);
+    }
 }
+
 
 function movePiece(r, c) {
     const validMoves = getValidMoves(selectedFrom.r, selectedFrom.c);
@@ -102,29 +103,23 @@ function movePiece(r, c) {
         return;
     }
 
-    const target = board[r][c];
-    if (target) {
-        inventories[target.color].push(target.type);
-    }
-
-    board[r][c] = selectedPiece;
-    board[selectedFrom.r][selectedFrom.c] = null;
+    const action = {
+        type: 'move',
+        player: turn,
+        from: { ...selectedFrom },
+        to: { r, c }
+    };
 
     selectedFrom = null;
     selectedPiece = null;
     setValidMoves([]);
-    endTurn();
-}
 
-function endTurn() {
-    if (checkWin(turn)) {
-        setGameOver();
-        render();
-        showToast(`${turn.toUpperCase()} WINS!`);
-        return;
-    }
+    const result = applyAction(action);
 
-    switchTurn();
     render();
     window.updateTurnUI();
+    
+    if (result?.gameOver) {
+        showToast(`${result.winner.toUpperCase()} WINS!`);
+    }
 }
