@@ -38,3 +38,12 @@ export function resetGame() {
 export function switchTurn() {
     turn = turn === 'white' ? 'black' : 'white';
 }
+export let selectedInventoryPiece = null;
+
+export function selectInventoryPiece(piece) {
+    selectedInventoryPiece = piece;
+}
+
+export function clearSelectedInventory() {
+    selectedInventoryPiece = null;
+}

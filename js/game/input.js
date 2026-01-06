@@ -1,5 +1,13 @@
 // js/game/input.js
-import { board, turn, inventories, placementComplete, switchTurn } from './state.js';
+import {
+    board,
+    turn,
+    inventories,
+    placementComplete,
+    switchTurn,
+    selectedInventoryPiece,
+    clearSelectedInventory
+} from './state.js';
 import { getValidMoves, checkPlacementComplete, checkWin } from './rules.js';
 import { render } from './renderer.js';
 import { showToast } from '../ui/toast.js';
@@ -23,7 +31,7 @@ function handleClick(e) {
     if (r < 0 || r > 3 || c < 0 || c > 3) return;
 
     // Placement phase
-    if (!placementComplete[turn] && inventories[turn].length > 0) {
+    if (selectedInventoryPiece) {
         placePiece(r, c);
         return;
     }
@@ -48,14 +56,16 @@ function placePiece(r, c) {
         return;
     }
 
-    const pieceType = inventories[turn][0];
     board[r][c] = {
-        type: pieceType,
+        type: selectedInventoryPiece,
         color: turn,
         dir: turn === 'white' ? -1 : 1
     };
 
-    inventories[turn].shift();
+    const idx = inventories[turn].indexOf(selectedInventoryPiece);
+    inventories[turn].splice(idx, 1);
+
+    clearSelectedInventory();
     checkPlacementComplete(turn);
     endTurn();
 }
