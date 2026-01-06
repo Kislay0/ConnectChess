@@ -4,7 +4,7 @@
 import { showScreen } from './ui/screens.js';
 import { showToast } from './ui/toast.js';
 import { initRenderer, render } from './game/renderer.js';
-import { board, turn } from './game/state.js';
+import { initInput } from './game/input.js';
 
 window.showScreen = showScreen;
 window.showToast = showToast;
@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvas = document.getElementById('boardCanvas');
     if (canvas) {
         initRenderer(canvas);
+        initInput(canvas, canvas.width);
     }
 });
 

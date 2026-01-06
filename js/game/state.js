@@ -35,3 +35,6 @@ export function resetGame() {
         black: false
     };
 }
+export function switchTurn() {
+    turn = turn === 'white' ? 'black' : 'white';
+}
