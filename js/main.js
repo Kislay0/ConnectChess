@@ -5,7 +5,7 @@ import { showToast } from './ui/toast.js';
 import { initRenderer, render, updateInventoryUI } from './game/renderer.js';
 import { initInput } from './game/input.js';
 import { selectInventoryPiece, turn } from './game/state.js';
-import { createRoom, joinRoom, currentRoom } from './online/rooms.js';
+import { createRoom, joinRoom, currentRoom, subscribeToRoomStatus, cancelRoom } from './online/rooms.js';
 import { subscribeToActions } from './online/actions.js';
 
 window.showScreen = showScreen;
@@ -13,49 +13,73 @@ window.showToast = showToast;
 
 // 🔧 TEMP DEV HELPERS (Phase 6.4 testing)
 
-window.__createRoom = async () => {
-    const room = await createRoom();
-    console.log('ROOM CREATED:', room);
-    alert(`ROOM CODE: ${room.code}`);
+// window.__createRoom = async () => {
+//     const room = await createRoom();
+//     console.log('ROOM CREATED:', room);
+//     alert(`ROOM CODE: ${room.code}`);
 
-    subscribeToActions(room.id);
+//     subscribeToActions(room.id);
 
-    showScreen('game-screen');
-    render();
-    updateTurnUI();
-};
+//     showScreen('game-screen');
+//     render();
+//     updateTurnUI();
+// };
 
-window.__joinRoom = async (code) => {
-    const room = await joinRoom(code);
-    console.log('ROOM JOINED:', room);
+// window.__joinRoom = async (code) => {
+//     const room = await joinRoom(code);
+//     console.log('ROOM JOINED:', room);
 
-    subscribeToActions(room.id);
+//     subscribeToActions(room.id);
 
-    showScreen('game-screen');
-    render();
-    updateTurnUI();
-};
+//     showScreen('game-screen');
+//     render();
+//     updateTurnUI();
+// };
 
 window.createOnlineRoom = async () => {
     try {
         const room = await createRoom();
-        console.log('Room created:', room);
-        alert(`Room code: ${room.code}`);
-        subscribeToActions(currentRoom.id);
-    } catch (e) {
-        alert(e.message);
+
+        // Show room code UI
+        document.getElementById('room-code').innerText = room.code;
+        showScreen('host-screen');
+
+        subscribeToRoomStatus(room.id, () => {
+            showScreen('game-screen');
+            subscribeToActions(room.id);
+            render();
+            updateTurnUI();
+        });
+    } catch (err) {
+        showToast(err.message || 'Failed to create room');
     }
 };
 
-window.joinOnlineRoom = async (code) => {
+window.joinOnlineRoom = async () => {
+    const input = document.getElementById('join-code-input');
+    const code = input.value.trim().toUpperCase();
+
+    if (code.length !== 6) {
+        showToast('Invalid room code');
+        return;
+    }
+
     try {
         const room = await joinRoom(code);
-        console.log('Joined room:', room);
-        alert(`Joined room ${room.code}`);
-        subscribeToActions(currentRoom.id);
-    } catch (e) {
-        alert('Room not found');
+
+        showScreen('game-screen');
+        subscribeToActions(room.id);
+
+        render();
+        updateTurnUI();
+    } catch (err) {
+        showToast('Room not found');
     }
+};
+
+window.cancelOnlineRoom = async () => {
+    await cancelRoom();
+    showScreen('menu-screen');
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -71,7 +95,6 @@ document.addEventListener('DOMContentLoaded', () => {
 document.querySelectorAll('.inv-item').forEach(item => {
     item.addEventListener('click', () => {
         const piece = item.dataset.type;
-        window.__selectedInventory = piece; // temporary UI bridge
         selectInventoryPiece(piece);
         updateInventoryUI();
     });

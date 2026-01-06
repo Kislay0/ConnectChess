@@ -29,7 +29,7 @@
             <div class="brand-name">ShadowFull's</div>
             <h2>Select Game Mode</h2>
             <div class="menu-btns">
-                <button onclick="startAIGame()">🤖 Play vs AI</button>
+                <button>🤖 Play vs AI (Coming Soon)</button>
                 <button onclick="startLocalGame()">🎮 Local Multiplayer</button>
                 <button onclick="showScreen('online-screen')">🌐 Online Multiplayer</button>
                 <button onclick="showScreen('menu-screen')" style="background:#444; color:white;">Back</button>
@@ -44,8 +44,8 @@
             <h2>🌐 Online Multiplayer</h2>
             <div id="online-auth-status" class="auth-status">Sign in to play online</div>
             <div class="menu-btns">
-                <button onclick="startMatchmaking()" id="matchmaking-btn">🎯 Find Match</button>
-                <button onclick="createRoom()">🏠 Create Private Room</button>
+                <button disabled title="Coming soon">🎯 Find Match</button>
+                <button onclick="createOnlineRoom()">🏠 Create Private Room</button>
                 <button onclick="showScreen('join-screen')">🔑 Join Private Room</button>
                 <button onclick="showScreen('mode-screen')" style="background:#444; color:white;">Back</button>
             </div>
@@ -84,7 +84,7 @@
             <p>Enter the room code:</p>
             <input type="text" class="room-input" id="join-code-input" maxlength="6" placeholder="------" autocomplete="off">
             <div class="menu-btns">
-                <button onclick="joinRoom()" id="join-btn">Join Game</button>
+                <button onclick="joinOnlineRoom()">Join Game</button>
                 <button onclick="showScreen('mode-screen')" style="background:#444; color:white;">Back</button>
             </div>
             <p id="join-status" class="waiting-text" style="display:none;"><span class="spinner"></span>Connecting...</p>
@@ -140,10 +140,10 @@
 
             <div class="game-over-controls" id="game-over-controls">
                 <button id="ingame-rematch-btn" onclick="handleRematchClick()">🔄 Rematch</button>
-                <button onclick="location.reload()" style="background:#444; color:white;">Quit Game</button>
+                <button onclick="cancelOnlineRoom()" style="background:#444; color:white;">Quit Game</button>
             </div>
             
-            <button id="quit-btn" onclick="location.reload()" style="background:#444; color:white;">Quit Game</button>
+            <button id="quit-btn" onclick="cancelOnlineRoom()" style="background:#444; color:white;">Quit Game</button>
         </div>
         <canvas id="boardCanvas"></canvas>
     </div>
