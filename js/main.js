@@ -1,15 +1,24 @@
+
 // js/main.js
 
 import { showScreen } from './ui/screens.js';
 import { showToast } from './ui/toast.js';
+import { initRenderer, render } from './game/renderer.js';
+import { board, turn } from './game/state.js';
 
-// Expose functions to HTML (temporary, will improve later)
 window.showScreen = showScreen;
 window.showToast = showToast;
 
-console.log('ChessConnect UI loaded');
-
-// Initial screen
 document.addEventListener('DOMContentLoaded', () => {
     showScreen('menu-screen');
+
+    const canvas = document.getElementById('boardCanvas');
+    if (canvas) {
+        initRenderer(canvas);
+    }
 });
+
+window.startLocalGame = () => {
+    showScreen('game-screen');
+    render();
+};

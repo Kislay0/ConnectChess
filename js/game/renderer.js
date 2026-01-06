@@ -1,0 +1,44 @@
+// js/game/renderer.js
+import { board, BOARD_SIZE } from './state.js';
+
+const PIECES = {
+    white: { P:'♙', R:'♖', N:'♘', B:'♗' },
+    black: { P:'♟', R:'♜', N:'♞', B:'♝' }
+};
+
+let canvas, ctx, cellSize;
+
+export function initRenderer(canvasEl) {
+    canvas = canvasEl;
+    ctx = canvas.getContext('2d');
+
+    const size = Math.min(window.innerWidth * 0.8, 400);
+    canvas.width = canvas.height = size;
+    cellSize = size / BOARD_SIZE;
+
+    render();
+}
+
+export function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let r = 0; r < BOARD_SIZE; r++) {
+        for (let c = 0; c < BOARD_SIZE; c++) {
+            ctx.fillStyle = (r + c) % 2 === 0 ? '#5e4533' : '#3d2b1f';
+            ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+
+            const piece = board[r][c];
+            if (piece) {
+                ctx.font = `${cellSize * 0.7}px serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = piece.color === 'white' ? '#fff' : '#111';
+                ctx.fillText(
+                    PIECES[piece.color][piece.type],
+                    c * cellSize + cellSize / 2,
+                    r * cellSize + cellSize / 2
+                );
+            }
+        }
+    }
+}

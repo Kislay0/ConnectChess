@@ -1,0 +1,37 @@
+// js/game/state.js
+
+export const BOARD_SIZE = 4;
+
+export let board = Array.from({ length: BOARD_SIZE }, () =>
+    Array(BOARD_SIZE).fill(null)
+);
+
+export let turn = 'white';
+
+export let inventories = {
+    white: ['P', 'R', 'N', 'B'],
+    black: ['P', 'R', 'N', 'B']
+};
+
+export let placementComplete = {
+    white: false,
+    black: false
+};
+
+export function resetGame() {
+    board = Array.from({ length: BOARD_SIZE }, () =>
+        Array(BOARD_SIZE).fill(null)
+    );
+
+    turn = 'white';
+
+    inventories = {
+        white: ['P', 'R', 'N', 'B'],
+        black: ['P', 'R', 'N', 'B']
+    };
+
+    placementComplete = {
+        white: false,
+        black: false
+    };
+}
