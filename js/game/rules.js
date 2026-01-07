@@ -1,4 +1,3 @@
-
 // js/game/rules.js
 import { board, BOARD_SIZE, placementComplete } from './state.js';
 

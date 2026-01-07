@@ -94,7 +94,7 @@ function placePiece(r, c) {
     clearSelectedInventory();
     setValidMoves([]);
     if (currentRoom) {
-        const result = applyAction(action);   // 👈 APPLY LOCALLY
+        const result = applyAction(action);
         postApply(result);
         sendAction(currentRoom.id, action);
     } else {
@@ -128,7 +128,7 @@ function movePiece(r, c) {
     setValidMoves([]);
 
     if (currentRoom) {
-        const result = applyAction(action);   // 👈 APPLY LOCALLY
+        const result = applyAction(action);
         postApply(result);
         sendAction(currentRoom.id, action);
     } else {
@@ -141,7 +141,5 @@ function postApply(result) {
     render();
     window.updateTurnUI();
 
-    if (result?.gameOver) {
-        showToast(`${result.winner.toUpperCase()} WINS!`);
-    }
+    window.handleGameOver(result);
 }

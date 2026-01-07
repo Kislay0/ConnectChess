@@ -1,3 +1,4 @@
+// js/online/supabase.js
 import { createClient } from 'https://esm.sh/@supabase/supabase-js';
 
 const SUPABASE_URL = 'https://egbyhcfybiaydllpejmq.supabase.co';

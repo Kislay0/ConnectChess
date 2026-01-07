@@ -4,12 +4,13 @@ import { showScreen } from './ui/screens.js';
 import { showToast } from './ui/toast.js';
 import { initRenderer, render, updateInventoryUI } from './game/renderer.js';
 import { initInput } from './game/input.js';
-import { selectInventoryPiece, turn, resetGameState } from './game/state.js';
-import { createRoom, joinRoom, currentRoom, subscribeToRoomStatus, closeRoom, deleteRoomAndActions } from './online/rooms.js';
-import { subscribeToActions } from './online/actions.js';
+import { selectInventoryPiece, turn, resetGameState, setGameOver } from './game/state.js';
+import { createRoom, joinRoom, currentRoom, subscribeToRoomStatus, closeRoom, deleteRoomAndActions, myColor, swapColors } from './online/rooms.js';
+import { subscribeToActions, sendAction } from './online/actions.js';
 
 window.showScreen = showScreen;
 window.showToast = showToast;
+let lastGameResult = null;
 
 // TEMP DEV HELPERS
 
@@ -115,6 +116,8 @@ function updateTurnUI() {
 window.updateTurnUI = updateTurnUI;
 
 window.startLocalGame = () => {
+    hideWinScreen();
+    lastGameResult = null;
     showScreen('game-screen');
     render();
     updateTurnUI();
@@ -131,3 +134,89 @@ window.addEventListener('room-closed', () => {
     resetGameState();
     showScreen('menu-screen');
 });
+
+window.handleGameOver = (result) => {
+    if (!result || !result.gameOver) return;
+    if (lastGameResult) return;
+
+    lastGameResult = result;
+
+    setGameOver(true);
+
+    showWinScreen(result.winner);
+    document.getElementById('game-screen').classList.add('animating');
+};
+
+
+function showWinScreen(winner) {
+    const winScreen = document.getElementById('win-screen');
+    const winnerText = document.getElementById('winner-text');
+    const rematchSection = document.getElementById('rematch-section');
+
+    winnerText.innerText = `${winner.toUpperCase()} WINS!`;
+
+    winScreen.classList.remove('hidden');
+    if (currentRoom) {
+        rematchSection.style.display = 'block';
+    }
+    else {
+        rematchSection.style.display = 'none';
+    }
+}
+
+function hideWinScreen() {
+    const winScreen = document.getElementById('win-screen');
+    const rematchSection = document.getElementById('rematch-section');
+
+    winScreen.classList.add('hidden');
+    rematchSection.style.display = 'none';
+}
+
+window.closeWinScreen = () => {
+    hideWinScreen();
+};
+
+window.leaveGame = () => {
+    hideWinScreen();
+    leaveOnlineGame(); // already implemented
+};
+
+window.handleRematchClick = () => {
+    if (!currentRoom) return;
+
+    sendAction(currentRoom.id, {
+        type: 'rematch-request',
+        player: myColor
+    });
+
+    document.getElementById('rematch-status').style.display = 'block';
+    document.getElementById('rematch-status').innerText = 'Waiting for opponent...';
+};
+
+window.acceptRematch = () => {
+    document.getElementById('rematch-popup').classList.add('hidden');
+
+    sendAction(currentRoom.id, {
+        type: 'rematch-accept',
+        player: myColor
+    });
+};
+
+window.rejectRematch = () => {
+    document.getElementById('rematch-popup').classList.add('hidden');
+
+    sendAction(currentRoom.id, {
+        type: 'rematch-reject',
+        player: myColor
+    });
+};
+
+function startRematch() {
+    hideWinScreen();
+    lastGameResult = null;
+    resetGameState();
+    render();
+    updateTurnUI();
+    swapColors();
+}
+window.addEventListener('rematch-accepted', startRematch);

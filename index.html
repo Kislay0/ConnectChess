@@ -1,3 +1,4 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,7 +30,7 @@
             <div class="brand-name">ShadowFull's</div>
             <h2>Select Game Mode</h2>
             <div class="menu-btns">
-                <button>🤖 Play vs AI (Coming Soon)</button>
+                <button disabled title="Coming soon">🤖 Play vs AI</button>
                 <button onclick="startLocalGame()">🎮 Local Multiplayer</button>
                 <button onclick="showScreen('online-screen')">🌐 Online Multiplayer</button>
                 <button onclick="showScreen('menu-screen')" style="background:#444; color:white;">Back</button>
@@ -138,10 +139,6 @@
             </div>
             <div class="history-indicator" id="history-indicator">📜 Viewing move history</div>
 
-            <div class="game-over-controls" id="game-over-controls">
-                <button id="ingame-rematch-btn" onclick="handleRematchClick()">🔄 Rematch</button>
-                <button onclick="leaveOnlineGame()" style="background:#444; color:white;">Quit Game</button>
-            </div>
             <button id="quit-btn" onclick="leaveOnlineGame()" style="background:#444; color:white;">Quit Game</button>
         </div>
         <canvas id="boardCanvas"></canvas>

@@ -108,3 +108,7 @@ export async function deleteRoomAndActions() {
         .delete()
         .eq('id', roomId);
 }
+
+export function swapColors() {
+    myColor = myColor === 'white' ? 'black' : 'white';
+}

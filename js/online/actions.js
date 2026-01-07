@@ -9,15 +9,31 @@ import { gameOver } from '../game/state.js';
 let channel = null;
 
 function handleRemoteAction(action) {
+    if (action.type === 'rematch-request') {
+        if (action.player !== myColor) {
+            document.getElementById('rematch-popup').classList.remove('hidden');
+        }
+        return;
+    }
+
+    if (action.type === 'rematch-accept') {
+        window.dispatchEvent(new Event('rematch-accepted'));
+        return;
+    }
+
+    if (action.type === 'rematch-reject') {
+        showToast("Rematch declined");
+        leaveOnlineGame();
+        return;
+    }
+    
     if (gameOver) return;
     const result = applyAction(action);
 
     render();
     window.updateTurnUI();
 
-    if (result?.gameOver) {
-        showToast(`${result.winner.toUpperCase()} WINS!`);
-    }
+    window.handleGameOver(result);
 }
 
 // Listen for actions sent by the other player
@@ -35,14 +51,22 @@ export function subscribeToActions(roomId) {
             payload => {
                 const row = payload.new;
 
-                if (row.player === myColor) return;
+                if (
+                    (row.type === 'move' || row.type === 'place') &&
+                    row.player === myColor
+                ) return;
                             
                 const action = {
                     type: row.type,
                     player: row.player,
                     ...row.payload
                 };
-                
+                console.log(
+                    '[REALTIME RECEIVED]',
+                    'type:', action.type,
+                    'player:', action.player,
+                    'me:', myColor
+                );
                 handleRemoteAction(action);
             }
         )
