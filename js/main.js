@@ -10,6 +10,7 @@ import { subscribeToActions, sendAction } from './online/actions.js';
 
 window.showScreen = showScreen;
 window.showToast = showToast;
+window.updateInventoryUI = updateInventoryUI;
 let lastGameResult = null;
 
 // TEMP DEV HELPERS
@@ -50,6 +51,9 @@ window.createOnlineRoom = async () => {
             subscribeToActions(room.id);
             render();
             updateTurnUI();
+            updatePlayerIdentity();
+            updateInventoryVisibility();
+            updateInventoryUI();
         });
     } catch (err) {
         showToast(err.message || 'Failed to create room');
@@ -73,6 +77,9 @@ window.joinOnlineRoom = async () => {
 
         render();
         updateTurnUI();
+        updatePlayerIdentity();
+        updateInventoryVisibility();
+        updateInventoryUI();
     } catch (err) {
         showToast('Room not found');
     }
@@ -82,6 +89,7 @@ window.leaveOnlineGame = async () => {
     await closeRoom();        // 🔔 notify opponent (realtime-safe)
     resetGameState();         // 🧹 clear local JS state
     showScreen('menu-screen');
+    document.getElementById('game-screen').classList.remove('animating');
 
     setTimeout(() => {
         deleteRoomAndActions();
@@ -108,10 +116,30 @@ document.querySelectorAll('.inv-item').forEach(item => {
 
 function updateTurnUI() {
     const el = document.getElementById('turn-txt');
+    const indicator = document.getElementById('turn-indicator');
+
     if (!el) return;
 
-    el.innerText = `${turn.toUpperCase()}'S TURN`;
-    el.className = `turn-display ${turn}-turn`;
+    if (!myColor) {
+        el.innerText = `${turn.toUpperCase()}'S TURN`;
+        el.className = `turn-display ${turn}-turn`;
+        indicator.style.display = 'none';
+        return;
+    }
+
+    if (turn === myColor) {
+        el.innerText = 'YOUR TURN';
+        el.className = 'turn-display your-turn';
+        indicator.style.display = 'block';
+        indicator.className = 'turn-indicator my-turn-indicator';
+        indicator.textContent = '✓ Your turn';
+    } else {
+        el.innerText = "OPPONENT'S TURN";
+        el.className = 'turn-display';
+        indicator.style.display = 'block';
+        indicator.className = 'turn-indicator wait-indicator';
+        indicator.textContent = '⏳ Waiting for opponent';
+    }
 }
 window.updateTurnUI = updateTurnUI;
 
@@ -119,14 +147,11 @@ window.startLocalGame = () => {
     hideWinScreen();
     lastGameResult = null;
     showScreen('game-screen');
-    render();
     updateTurnUI();
-};
-
-window.leaveOnlineGame = async () => {
-    await closeRoom();          // notify opponent
-    resetGameState();           // clear local state
-    showScreen('menu-screen');
+    updatePlayerIdentity();
+    updateInventoryVisibility();
+    updateInventoryUI();
+    render();
 };
 
 window.addEventListener('room-closed', () => {
@@ -215,8 +240,37 @@ function startRematch() {
     hideWinScreen();
     lastGameResult = null;
     resetGameState();
-    render();
     updateTurnUI();
     swapColors();
+    updatePlayerIdentity();
+    updateInventoryVisibility();
+    document.getElementById('game-screen').classList.remove('animating');
+    updateInventoryUI();
+    render();
 }
 window.addEventListener('rematch-accepted', startRematch);
+
+function updatePlayerIdentity() {
+    const el = document.getElementById('player-identity');
+
+    if (!currentRoom) {
+        el.innerText = 'LOCAL MODE';
+        return;
+    }
+
+    el.innerText = `YOU ARE ${myColor.toUpperCase()}`;
+}
+
+function updateInventoryVisibility() {
+    const whiteInv = document.getElementById('white-inv');
+    const blackInv = document.getElementById('black-inv');
+
+    if (!myColor) {
+        whiteInv.style.display = 'grid';
+        blackInv.style.display = 'grid';
+        return;
+    }
+
+    whiteInv.style.display = myColor === 'white' ? 'grid' : 'none';
+    blackInv.style.display = myColor === 'black' ? 'grid' : 'none';
+}

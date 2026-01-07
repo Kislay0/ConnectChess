@@ -140,6 +140,7 @@ function movePiece(r, c) {
 function postApply(result) {
     render();
     window.updateTurnUI();
+    window.updateInventoryUI(); 
 
     window.handleGameOver(result);
 }

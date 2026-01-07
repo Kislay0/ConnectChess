@@ -1,5 +1,6 @@
 // js/game/renderer.js
-import { board, BOARD_SIZE } from './state.js';
+import { board, BOARD_SIZE, inventories, selectedInventoryPiece } from './state.js';
+import { myColor } from '../online/rooms.js';
 
 const PIECES = {
     white: { P:'♙', R:'♖', N:'♘', B:'♗' },
@@ -64,9 +65,19 @@ export function updateInventoryUI() {
         const piece = item.dataset.type;
         const player = item.dataset.player;
 
+        if (myColor && player !== myColor) {
+            item.style.display = 'none';
+            return;
+        } else {
+            item.style.display = '';
+        }
+
+        const hasPiece = inventories[player]?.includes(piece);
+        item.classList.toggle('disabled', !hasPiece);
+
         item.classList.toggle(
             'selected',
-            player && piece && piece === window.__selectedInventory
+            hasPiece && piece === selectedInventoryPiece
         );
     });
 }
