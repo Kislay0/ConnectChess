@@ -13,3 +13,6 @@ desktop.ini
 
 # Environment variables
 .env
+
+#Development testing files
+devtest.js

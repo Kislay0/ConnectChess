@@ -1,6 +1,7 @@
 // js/game/state.js
 
 export const BOARD_SIZE = 4;
+export let gameMode = 'local'; // 'local' | 'online'
 
 export let board = Array.from({ length: BOARD_SIZE }, () =>
     Array(BOARD_SIZE).fill(null)
@@ -19,23 +20,6 @@ export let placementComplete = {
     black: false
 };
 
-export function resetGame() {
-    board = Array.from({ length: BOARD_SIZE }, () =>
-        Array(BOARD_SIZE).fill(null)
-    );
-
-    turn = 'white';
-
-    inventories = {
-        white: ['P', 'R', 'N', 'B'],
-        black: ['P', 'R', 'N', 'B']
-    };
-
-    placementComplete = {
-        white: false,
-        black: false
-    };
-}
 export function switchTurn() {
     turn = turn === 'white' ? 'black' : 'white';
 }
@@ -70,4 +54,9 @@ export function resetGameState() {
 
     turn = 'white';
     gameOver = false;
+    gameMode = 'local';
+}
+
+export function setOnlineMode() {
+    gameMode = 'online';
 }

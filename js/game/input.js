@@ -1,5 +1,6 @@
 // js/game/input.js
 import {
+    gameMode,
     board,
     turn,
     inventories,
@@ -10,7 +11,7 @@ import {
     gameOver,
     setGameOver
 } from './state.js';
-import { getValidMoves, checkPlacementComplete, checkWin } from './rules.js';
+import { getValidMoves } from './rules.js';
 import { render, setValidMoves } from './renderer.js';
 import { showToast } from '../ui/toast.js';
 import { applyAction } from './actions.js';
@@ -20,6 +21,7 @@ import { currentRoom, myColor } from '../online/rooms.js';
 let selectedPiece = null;
 let selectedFrom = null;
 let canvas, cellSize;
+let currentUserColor = gameMode === 'online' ? myColor : turn;
 
 export function initInput(canvasEl, size) {
     canvas = canvasEl;
@@ -41,17 +43,13 @@ function handleClick(e) {
     if (r < 0 || r > 3 || c < 0 || c > 3) return;
 
     // Placement commit (turn-restricted)
-    if (selectedInventoryPiece) {
-        if (currentRoom && turn !== myColor) {
-            showToast("Not your turn to place");
-            return;
-        }
+    if (selectedInventoryPiece && currentUserColor === turn) {
         placePiece(r, c);
         return;
     }
 
     // Selecting a piece (ALWAYS allowed)
-    if (!selectedFrom && board[r][c]?.color === myColor) {
+    if (!selectedFrom && board[r][c]?.color === currentUserColor) {
         selectedFrom = { r, c };
         selectedPiece = board[r][c];
         setValidMoves(getValidMoves(r, c));
@@ -60,20 +58,12 @@ function handleClick(e) {
     }
 
     // Move commit (turn-restricted)
-    if (selectedFrom) {
-        if (currentRoom && turn !== myColor) {
-            showToast("Not your turn to move");
-            return;
-        }
-        movePiece(r, c);
-    }
+    if (selectedFrom && currentUserColor === turn) movePiece(r, c);
 }
 
 
 function placePiece(r, c) {
-    console.log("placePiece called", { r, c, selectedInventoryPiece, turn, myColor, currentRoom });
-
-    if (!currentRoom && !inventories[turn].includes(selectedInventoryPiece)) {
+    if (gameMode === 'online' && !inventories[turn].includes(selectedInventoryPiece)) {
         showToast("You don't have that piece");
         clearSelectedInventory();
         return;
@@ -86,17 +76,17 @@ function placePiece(r, c) {
 
     const action = {
         type: 'place',
-        player: turn,
+        player: currentUserColor,
         piece: selectedInventoryPiece,
         to: { r, c }
     };
 
     clearSelectedInventory();
     setValidMoves([]);
-    if (currentRoom) {
-        const result = applyAction(action);
-        postApply(result);
+    if (gameMode === 'online') {
         sendAction(currentRoom.id, action);
+        // const result = applyAction(action);
+        // postApply(result);
     } else {
         const result = applyAction(action);
         postApply(result);
@@ -114,11 +104,11 @@ function movePiece(r, c) {
         setValidMoves([]);
         render();
         return;
-    }
+    } turn
 
     const action = {
         type: 'move',
-        player: turn,
+        player: currentUserColor,
         from: { ...selectedFrom },
         to: { r, c }
     };
@@ -127,10 +117,10 @@ function movePiece(r, c) {
     selectedPiece = null;
     setValidMoves([]);
 
-    if (currentRoom) {
-        const result = applyAction(action);
-        postApply(result);
+    if (gameMode === 'online') {
         sendAction(currentRoom.id, action);
+        // const result = applyAction(action);
+        // postApply(result);
     } else {
         const result = applyAction(action);
         postApply(result);

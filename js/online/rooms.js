@@ -1,4 +1,6 @@
 // js/online/rooms.js
+import { setOnlineMode } from '../game/state.js';
+import { resetActionSubscription } from './actions.js';
 import { supabase } from './supabase.js';
 
 export let currentRoom = null;
@@ -28,6 +30,7 @@ export async function createRoom() {
     myPlayerId = crypto.randomUUID();
     currentRoom = data;
     myColor = 'white'; // host is white
+    setOnlineMode();
 
     return data;
 }
@@ -53,6 +56,7 @@ export async function joinRoom(code) {
     myPlayerId = crypto.randomUUID();
     currentRoom = data;
     myColor = 'black'; // joiner is black
+    setOnlineMode();
 
     return data;
 }
@@ -111,4 +115,10 @@ export async function deleteRoomAndActions() {
 
 export function swapColors() {
     myColor = myColor === 'white' ? 'black' : 'white';
+}
+
+export function resetOnlineState() {
+    currentRoom = null;
+    myColor = null;
+    resetActionSubscription();
 }

@@ -51,11 +51,6 @@ export function subscribeToActions(roomId) {
             payload => {
                 const row = payload.new;
 
-                if (
-                    (row.type === 'move' || row.type === 'place') &&
-                    row.player === myColor
-                ) return;
-                            
                 const action = {
                     type: row.type,
                     player: row.player,
@@ -85,4 +80,11 @@ export async function sendAction(roomId, action) {
             to: action.to
         }
     });
+}
+
+export function resetActionSubscription() {
+    if (channel) {
+        supabase.removeChannel(channel);
+        channel = null;
+    }
 }

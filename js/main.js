@@ -4,39 +4,24 @@ import { showScreen } from './ui/screens.js';
 import { showToast } from './ui/toast.js';
 import { initRenderer, render, updateInventoryUI } from './game/renderer.js';
 import { initInput } from './game/input.js';
-import { selectInventoryPiece, turn, resetGameState, setGameOver } from './game/state.js';
-import { createRoom, joinRoom, currentRoom, subscribeToRoomStatus, closeRoom, deleteRoomAndActions, myColor, swapColors } from './online/rooms.js';
+import { selectInventoryPiece, turn, resetGameState, setGameOver, gameMode } from './game/state.js';
+import {
+    createRoom,
+    joinRoom,
+    currentRoom,
+    subscribeToRoomStatus,
+    closeRoom,
+    deleteRoomAndActions,
+    myColor,
+    swapColors,
+    resetOnlineState
+} from './online/rooms.js';
 import { subscribeToActions, sendAction } from './online/actions.js';
 
 window.showScreen = showScreen;
 window.showToast = showToast;
 window.updateInventoryUI = updateInventoryUI;
 let lastGameResult = null;
-
-// TEMP DEV HELPERS
-
-// window.__createRoom = async () => {
-//     const room = await createRoom();
-//     console.log('ROOM CREATED:', room);
-//     alert(`ROOM CODE: ${room.code}`);
-
-//     subscribeToActions(room.id);
-
-//     showScreen('game-screen');
-//     render();
-//     updateTurnUI();
-// };
-
-// window.__joinRoom = async (code) => {
-//     const room = await joinRoom(code);
-//     console.log('ROOM JOINED:', room);
-
-//     subscribeToActions(room.id);
-
-//     showScreen('game-screen');
-//     render();
-//     updateTurnUI();
-// };
 
 window.createOnlineRoom = async () => {
     try {
@@ -86,8 +71,9 @@ window.joinOnlineRoom = async () => {
 };
 
 window.leaveOnlineGame = async () => {
-    await closeRoom();        // 🔔 notify opponent (realtime-safe)
-    resetGameState();         // 🧹 clear local JS state
+    await closeRoom();
+    resetGameState();
+    resetOnlineState();
     showScreen('menu-screen');
     document.getElementById('game-screen').classList.remove('animating');
 
@@ -144,6 +130,7 @@ function updateTurnUI() {
 window.updateTurnUI = updateTurnUI;
 
 window.startLocalGame = () => {
+    resetGameState();
     hideWinScreen();
     lastGameResult = null;
     showScreen('game-screen');
@@ -253,7 +240,7 @@ window.addEventListener('rematch-accepted', startRematch);
 function updatePlayerIdentity() {
     const el = document.getElementById('player-identity');
 
-    if (!currentRoom) {
+    if (gameMode === 'local') {
         el.innerText = 'LOCAL MODE';
         return;
     }
@@ -265,7 +252,7 @@ function updateInventoryVisibility() {
     const whiteInv = document.getElementById('white-inv');
     const blackInv = document.getElementById('black-inv');
 
-    if (!myColor) {
+    if (gameMode === 'local') {
         whiteInv.style.display = 'grid';
         blackInv.style.display = 'grid';
         return;
